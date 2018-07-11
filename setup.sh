@@ -47,22 +47,22 @@ echo
 read -p "Timezone (default: Europe/London): " TZONE
 TZONE=${TZONE:-'Europe/London'}
 
-read -p "Email address for sysadmin (e.g. j.bloggs@example.com): " EMAILADDR
+#read -p "Email address for sysadmin (e.g. j.bloggs@example.com): " EMAILADDR
 
-echo
+#echo
 
-read -p "SSH log-in port (default: 22): " SSHPORT
-SSHPORT=${SSHPORT:-22}
+#read -p "SSH log-in port (default: 22): " SSHPORT
+#SSHPORT=${SSHPORT:-22}
 
-read -p "SSH log-in username: " LOGINUSERNAME
-while true; do
-  read -s -p "SSH log-in password (must be REALLY STRONG): " LOGINPASSWORD
-  echo
-  read -s -p "Confirm SSH log-in password: " LOGINPASSWORD2
-  echo
-  [ "$LOGINPASSWORD" = "$LOGINPASSWORD2" ] && break
-  echo "Passwords didn't match -- please try again"
-done
+#read -p "SSH log-in username: " LOGINUSERNAME
+#while true; do
+#  read -s -p "SSH log-in password (must be REALLY STRONG): " LOGINPASSWORD
+#  echo
+#  read -s -p "Confirm SSH log-in password: " LOGINPASSWORD2
+#  echo
+#  [ "$LOGINPASSWORD" = "$LOGINPASSWORD2" ] && break
+#  echo "Passwords didn't match -- please try again"
+#done
 
 
 VPNIPPOOL="10.10.10.0/24"
@@ -75,10 +75,10 @@ echo
 export DEBIAN_FRONTEND=noninteractive
 apt-get -o Acquire::ForceIPv4=true update && apt-get upgrade -y
 
-debconf-set-selections <<< "postfix postfix/mailname string ${VPNHOST}"
-debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Internet Site'"
+#debconf-set-selections <<< "postfix postfix/mailname string ${VPNHOST}"
+#debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Internet Site'"
 
-apt-get install -y language-pack-en strongswan libstrongswan-standard-plugins strongswan-libcharon libcharon-standard-plugins libcharon-extra-plugins moreutils iptables-persistent postfix mutt unattended-upgrades certbot
+apt-get install -y language-pack-en strongswan libstrongswan-standard-plugins strongswan-libcharon libcharon-standard-plugins libcharon-extra-plugins moreutils iptables-persistent unattended-upgrades
 
 
 ETH0ORSIMILAR=$(ip route get 8.8.8.8 | awk -- '{printf $5}')
@@ -164,15 +164,15 @@ echo
 echo "--- Configuring RSA certificates ---"
 echo
 
-mkdir -p /etc/letsencrypt
+#mkdir -p /etc/letsencrypt
 
-echo 'rsa-key-size = 4096
-pre-hook = /sbin/iptables -I INPUT -p tcp --dport 80 -j ACCEPT
-post-hook = /sbin/iptables -D INPUT -p tcp --dport 80 -j ACCEPT
-renew-hook = /usr/sbin/ipsec reload && /usr/sbin/ipsec secrets
-' > /etc/letsencrypt/cli.ini
+#echo 'rsa-key-size = 4096
+#pre-hook = /sbin/iptables -I INPUT -p tcp --dport 80 -j ACCEPT
+#post-hook = /sbin/iptables -D INPUT -p tcp --dport 80 -j ACCEPT
+#renew-hook = /usr/sbin/ipsec reload && /usr/sbin/ipsec secrets
+#' > /etc/letsencrypt/cli.ini
 
-certbot certonly --non-interactive --agree-tos --standalone --preferred-challenges http --email $EMAILADDR -d $VPNHOST
+#certbot certonly --non-interactive --agree-tos --standalone --preferred-challenges http --email $EMAILADDR -d $VPNHOST
 
 ln -f -s /etc/letsencrypt/live/$VPNHOST/cert.pem    /etc/ipsec.d/certs/cert.pem
 ln -f -s /etc/letsencrypt/live/$VPNHOST/privkey.pem /etc/ipsec.d/private/privkey.pem
@@ -256,25 +256,25 @@ echo
 
 # user + SSH
 
-id -u $LOGINUSERNAME &>/dev/null || adduser --disabled-password --gecos "" $LOGINUSERNAME
-echo "${LOGINUSERNAME}:${LOGINPASSWORD}" | chpasswd
-adduser ${LOGINUSERNAME} sudo
+#id -u $LOGINUSERNAME &>/dev/null || adduser --disabled-password --gecos "" $LOGINUSERNAME
+#echo "${LOGINUSERNAME}:${LOGINPASSWORD}" | chpasswd
+#adduser ${LOGINUSERNAME} sudo
 
-sed -r \
--e "s/^#?Port 22$/Port ${SSHPORT}/" \
--e 's/^#?LoginGraceTime (120|2m)$/LoginGraceTime 30/' \
--e 's/^#?PermitRootLogin yes$/PermitRootLogin no/' \
--e 's/^#?X11Forwarding yes$/X11Forwarding no/' \
--e 's/^#?UsePAM yes$/UsePAM no/' \
--i.original /etc/ssh/sshd_config
+#sed -r \
+#-e "s/^#?Port 22$/Port ${SSHPORT}/" \
+#-e 's/^#?LoginGraceTime (120|2m)$/LoginGraceTime 30/' \
+#-e 's/^#?PermitRootLogin yes$/PermitRootLogin no/' \
+#-e 's/^#?X11Forwarding yes$/X11Forwarding no/' \
+#-e 's/^#?UsePAM yes$/UsePAM no/' \
+#-i.original /etc/ssh/sshd_config
 
-grep -Fq 'jawj/IKEv2-setup' /etc/ssh/sshd_config || echo "
-# https://github.com/jawj/IKEv2-setup
-MaxStartups 1
-MaxAuthTries 2
-UseDNS no" >> /etc/ssh/sshd_config
+#grep -Fq 'jawj/IKEv2-setup' /etc/ssh/sshd_config || echo "
+## https://github.com/jawj/IKEv2-setup
+#MaxStartups 1
+#MaxAuthTries 2
+#UseDNS no" >> /etc/ssh/sshd_config
 
-service ssh restart
+#service ssh restart
 
 
 echo
@@ -282,39 +282,39 @@ echo "--- Timezone, mail, unattended upgrades ---"
 echo
 
 timedatectl set-timezone $TZONE
-/usr/sbin/update-locale LANG=en_GB.UTF-8
+/usr/sbin/update-locale LANG=en_CA.UTF-8
 
 
-sed -r \
--e "s/^myhostname =.*$/myhostname = ${VPNHOST}/" \
--e 's/^inet_interfaces =.*$/inet_interfaces = loopback-only/' \
--i.original /etc/postfix/main.cf
+#sed -r \
+#-e "s/^myhostname =.*$/myhostname = ${VPNHOST}/" \
+#-e 's/^inet_interfaces =.*$/inet_interfaces = loopback-only/' \
+#-i.original /etc/postfix/main.cf
 
-grep -Fq 'jawj/IKEv2-setup' /etc/aliases || echo "
-# https://github.com/jawj/IKEv2-setup
-root: ${EMAILADDR}
-${LOGINUSERNAME}: ${EMAILADDR}
-" >> /etc/aliases
+#grep -Fq 'jawj/IKEv2-setup' /etc/aliases || echo "
+## https://github.com/jawj/IKEv2-setup
+#root: ${EMAILADDR}
+#${LOGINUSERNAME}: ${EMAILADDR}
+#" >> /etc/aliases
 
-newaliases
-service postfix restart
+#newaliases
+#service postfix restart
 
 
-sed -r \
--e 's|^//Unattended-Upgrade::MinimalSteps "true";$|Unattended-Upgrade::MinimalSteps "true";|' \
--e 's|^//Unattended-Upgrade::Mail "root";$|Unattended-Upgrade::Mail "root";|' \
--e 's|^//Unattended-Upgrade::Automatic-Reboot "false";$|Unattended-Upgrade::Automatic-Reboot "true";|' \
--e 's|^//Unattended-Upgrade::Remove-Unused-Dependencies "false";|Unattended-Upgrade::Remove-Unused-Dependencies "true";|' \
--e 's|^//Unattended-Upgrade::Automatic-Reboot-Time "02:00";$|Unattended-Upgrade::Automatic-Reboot-Time "03:00";|' \
--i /etc/apt/apt.conf.d/50unattended-upgrades
+#sed -r \
+#-e 's|^//Unattended-Upgrade::MinimalSteps "true";$|Unattended-Upgrade::MinimalSteps "true";|' \
+#-e 's|^//Unattended-Upgrade::Mail "root";$|Unattended-Upgrade::Mail "root";|' \
+#-e 's|^//Unattended-Upgrade::Automatic-Reboot "false";$|Unattended-Upgrade::Automatic-Reboot "true";|' \
+#-e 's|^//Unattended-Upgrade::Remove-Unused-Dependencies "false";|Unattended-Upgrade::Remove-Unused-Dependencies "true";|' \
+#-e 's|^//Unattended-Upgrade::Automatic-Reboot-Time "02:00";$|Unattended-Upgrade::Automatic-Reboot-Time "03:00";|' \
+#-i /etc/apt/apt.conf.d/50unattended-upgrades
 
-echo 'APT::Periodic::Update-Package-Lists "1";
-APT::Periodic::Download-Upgradeable-Packages "1";
-APT::Periodic::AutocleanInterval "7";
-APT::Periodic::Unattended-Upgrade "1";
-' > /etc/apt/apt.conf.d/10periodic
+#echo 'APT::Periodic::Update-Package-Lists "1";
+#APT::Periodic::Download-Upgradeable-Packages "1";
+#APT::Periodic::AutocleanInterval "7";
+#APT::Periodic::Unattended-Upgrade "1";
+#' > /etc/apt/apt.conf.d/10periodic
 
-service unattended-upgrades restart
+#service unattended-upgrades restart
 
 echo
 echo "--- Creating configuration files ---"
